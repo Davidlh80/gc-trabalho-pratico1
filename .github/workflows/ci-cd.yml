@@ -2,9 +2,10 @@ name: CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
+  workflow_dispatch:  # permite rodar manualmente no botão "Run workflow"
 
 jobs:
   build-and-test:
@@ -50,7 +51,7 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     needs: acceptance
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout
