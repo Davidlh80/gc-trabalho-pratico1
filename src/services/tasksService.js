@@ -1,15 +1,35 @@
 let tasks = [];
 let currentId = 1;
 
+function validateTaskTitle(title) {
+  return typeof title === 'string' && title.trim().length > 0;
+}
+
+function normalizeSearchTerm(term) {
+  return typeof term === 'string' ? term.trim().toLowerCase() : '';
+}
+
 function listTasks() {
   return tasks;
 }
 
+function listDoneTasks() {
+  return tasks.filter((t) => t.done);
+}
+
+function listPendingTasks() {
+  return tasks.filter((t) => !t.done);
+}
+
 function createTask(title, description) {
+  if (!validateTaskTitle(title)) {
+    throw new Error('Título inválido');
+  }
+
   const task = {
     id: currentId++,
-    title,
-    description,
+    title: title.trim(),
+    description: (description || '').trim(),
     done: false,
   };
   tasks.push(task);
@@ -24,8 +44,14 @@ function updateTask(id, data) {
   const task = getTaskById(id);
   if (!task) return null;
 
-  task.title = data.title ?? task.title;
-  task.description = data.description ?? task.description;
+  if (typeof data.title === 'string' && data.title.trim().length > 0) {
+    task.title = data.title.trim();
+  }
+
+  if (typeof data.description === 'string') {
+    task.description = data.description.trim();
+  }
+
   if (typeof data.done === 'boolean') {
     task.done = data.done;
   }
@@ -40,6 +66,33 @@ function deleteTask(id) {
   return true;
 }
 
+function deleteAllTasks() {
+  const hadTasks = tasks.length > 0;
+  tasks = [];
+  currentId = 1;
+  return hadTasks;
+}
+
+function searchTasksByTitle(term) {
+  const normalized = normalizeSearchTerm(term);
+  if (!normalized) return [];
+  return tasks.filter((t) =>
+    t.title.toLowerCase().includes(normalized)
+  );
+}
+
+function getTasksSummary() {
+  const total = tasks.length;
+  const done = tasks.filter((t) => t.done).length;
+  const pending = total - done;
+
+  return {
+    total,
+    done,
+    pending,
+  };
+}
+
 function _resetTasks() {
   tasks = [];
   currentId = 1;
@@ -47,9 +100,16 @@ function _resetTasks() {
 
 module.exports = {
   listTasks,
+  listDoneTasks,
+  listPendingTasks,
   createTask,
   getTaskById,
   updateTask,
   deleteTask,
+  deleteAllTasks,
+  searchTasksByTitle,
+  getTasksSummary,
   _resetTasks,
+  validateTaskTitle,
+  normalizeSearchTerm,
 };
